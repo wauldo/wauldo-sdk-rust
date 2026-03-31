@@ -1,0 +1,30 @@
+[package]
+name = "wauldo"
+version = "0.1.1"
+edition = "2021"
+rust-version = "1.70"
+authors = ["Wauldo Team"]
+description = "Official Rust SDK for Wauldo — Verified AI answers from your documents"
+license = "MIT"
+repository = "https://github.com/wauldo/wauldo-sdk-rust"
+documentation = "https://docs.rs/wauldo"
+homepage = "https://wauldo.com"
+readme = "README.md"
+keywords = ["ai", "llm", "openai", "privacy", "gdpr"]
+categories = ["api-bindings", "asynchronous", "web-programming::http-client"]
+
+[dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync", "io-util", "process"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+async-trait = "0.1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls"] }
+futures-util = "0.3"
+tracing = "0.1"
+regex = "1"
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+
