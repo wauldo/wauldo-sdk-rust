@@ -241,6 +241,61 @@ pub struct OrchestratorResponse {
     pub final_output: String,
 }
 
+// ── Fact-Check ─────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FactCheckRequest {
+    pub text: String,
+    pub source_context: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mode: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ClaimResult {
+    pub text: String,
+    pub claim_type: String,
+    pub supported: bool,
+    pub confidence: f64,
+    pub confidence_label: String,
+    pub verdict: String,
+    pub action: String,
+    #[serde(default)]
+    pub reason: Option<String>,
+    #[serde(default)]
+    pub evidence: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FactCheckResponse {
+    pub verdict: String,
+    pub action: String,
+    pub hallucination_rate: f64,
+    pub mode: String,
+    pub total_claims: usize,
+    pub supported_claims: usize,
+    pub confidence: f64,
+    pub claims: Vec<ClaimResult>,
+    #[serde(default)]
+    pub mode_warning: Option<String>,
+    pub processing_time_ms: u64,
+}
+
+impl FactCheckRequest {
+    pub fn new(text: impl Into<String>, source_context: impl Into<String>) -> Self {
+        Self {
+            text: text.into(),
+            source_context: source_context.into(),
+            mode: None,
+        }
+    }
+
+    pub fn with_mode(mut self, mode: impl Into<String>) -> Self {
+        self.mode = Some(mode.into());
+        self
+    }
+}
+
 // ── Builders ────────────────────────────────────────────────────────────
 
 impl ChatRequest {

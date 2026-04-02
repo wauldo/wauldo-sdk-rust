@@ -259,6 +259,13 @@ impl HttpClient {
         .await
     }
 
+    // ── Fact-Check ─────────────────────────────────────────────────────
+
+    /// POST /v1/fact-check — Verify claims against source context
+    pub async fn fact_check(&self, request: FactCheckRequest) -> Result<FactCheckResponse> {
+        self.post("/v1/fact-check", &request).await
+    }
+
     /// Create a stateful conversation helper using this client
     pub fn conversation(&self) -> Conversation {
         Conversation::new(self.clone())

@@ -95,6 +95,21 @@ let reply = conv.say("What is the borrow checker?").await?;
 let follow_up = conv.say("Give me an example").await?;
 ```
 
+### Fact-Check — Verify Claims
+
+```rust
+let result = client.fact_check(
+    FactCheckRequest::new(
+        "Returns accepted within 60 days.",
+        "Our policy allows returns within 14 days.",
+    ).with_mode("lexical")
+).await?;
+println!("Verdict: {}", result.verdict); // "rejected"
+for claim in &result.claims {
+    println!("{} → {} ({})", claim.text, claim.verdict, claim.reason.as_deref().unwrap_or("none"));
+}
+```
+
 ## Error Handling
 
 ```rust

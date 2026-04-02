@@ -17,6 +17,7 @@ pub struct MockHttpClient {
     models: Option<ModelList>,
     rag_upload_response: Option<RagUploadResponse>,
     rag_query_response: Option<RagQueryResponse>,
+    fact_check_response: Option<FactCheckResponse>,
 }
 
 impl MockHttpClient {
@@ -33,6 +34,7 @@ impl MockHttpClient {
             models: None,
             rag_upload_response: None,
             rag_query_response: None,
+            fact_check_response: None,
         }
     }
 
@@ -87,6 +89,12 @@ impl MockHttpClient {
     /// ```
     pub fn with_rag_query(mut self, response: RagQueryResponse) -> Self {
         self.rag_query_response = Some(response);
+        self
+    }
+
+    /// Set the fact-check response returned by `fact_check()`
+    pub fn with_fact_check(mut self, response: FactCheckResponse) -> Self {
+        self.fact_check_response = Some(response);
         self
     }
 
@@ -231,6 +239,13 @@ impl MockHttpClient {
     ) -> Result<OrchestratorResponse> {
         Ok(OrchestratorResponse {
             final_output: "Mock parallel result".to_string(),
+        })
+    }
+
+    /// Fact-check (mocked) -- returns the value set via `with_fact_check()`
+    pub async fn fact_check(&self, _request: FactCheckRequest) -> Result<FactCheckResponse> {
+        self.fact_check_response.clone().ok_or_else(|| {
+            crate::error::Error::connection("MockHttpClient: no fact_check response configured")
         })
     }
 
