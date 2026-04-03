@@ -296,6 +296,64 @@ impl FactCheckRequest {
     }
 }
 
+// ── Citation Verify ──────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SourceChunk {
+    pub name: String,
+    pub content: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CitationDetail {
+    pub citation: String,
+    pub source_name: String,
+    pub is_valid: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct VerifyCitationRequest {
+    pub text: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sources: Option<Vec<SourceChunk>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub threshold: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VerifyCitationResponse {
+    pub citation_ratio: f64,
+    pub has_sufficient_citations: bool,
+    pub sentence_count: usize,
+    pub citation_count: usize,
+    pub uncited_sentences: Vec<String>,
+    #[serde(default)]
+    pub citations: Option<Vec<CitationDetail>>,
+    #[serde(default)]
+    pub phantom_count: Option<usize>,
+    pub processing_time_ms: u64,
+}
+
+impl VerifyCitationRequest {
+    pub fn new(text: impl Into<String>) -> Self {
+        Self {
+            text: text.into(),
+            sources: None,
+            threshold: None,
+        }
+    }
+
+    pub fn with_sources(mut self, sources: Vec<SourceChunk>) -> Self {
+        self.sources = Some(sources);
+        self
+    }
+
+    pub fn with_threshold(mut self, threshold: f64) -> Self {
+        self.threshold = Some(threshold);
+        self
+    }
+}
+
 // ── Builders ────────────────────────────────────────────────────────────
 
 impl ChatRequest {

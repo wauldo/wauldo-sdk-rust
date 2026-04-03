@@ -266,6 +266,14 @@ impl HttpClient {
         self.post("/v1/fact-check", &request).await
     }
 
+    /// POST /v1/verify — Verify citation coverage in text
+    pub async fn verify_citation(
+        &self,
+        request: VerifyCitationRequest,
+    ) -> Result<VerifyCitationResponse> {
+        self.post("/v1/verify", &request).await
+    }
+
     /// Create a stateful conversation helper using this client
     pub fn conversation(&self) -> Conversation {
         Conversation::new(self.clone())
