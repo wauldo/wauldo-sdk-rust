@@ -153,6 +153,29 @@ pub struct RagUploadResponse {
     pub chunks_count: usize,
 }
 
+/// Quality assessment of an uploaded document
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DocumentQuality {
+    pub score: f32,
+    pub label: String,
+    pub word_count: usize,
+    pub line_density: f32,
+    pub avg_line_length: f32,
+    pub paragraph_count: usize,
+}
+
+/// Response from POST /v1/upload-file (PDF, DOCX, text, image)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UploadFileResponse {
+    pub document_id: String,
+    pub chunks_count: usize,
+    pub indexed_at: String,
+    pub content_type: String,
+    pub trace_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quality: Option<DocumentQuality>,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct RagQueryRequest {
     pub query: String,
