@@ -274,6 +274,27 @@ impl HttpClient {
         self.post("/v1/verify", &request).await
     }
 
+    // ── Insights & Analytics ──────────────────────────────────────────
+
+    /// GET /v1/insights — ROI metrics for your API key
+    pub async fn get_insights(&self) -> Result<InsightsResponse> {
+        self.get("/v1/insights").await
+    }
+
+    /// GET /v1/analytics — Usage analytics and cache performance
+    pub async fn get_analytics(&self, minutes: Option<u64>) -> Result<AnalyticsResponse> {
+        let path = match minutes {
+            Some(m) => format!("/v1/analytics?minutes={}", m),
+            None => "/v1/analytics".to_string(),
+        };
+        self.get(&path).await
+    }
+
+    /// GET /v1/analytics/traffic — Per-tenant traffic monitoring
+    pub async fn get_analytics_traffic(&self) -> Result<TrafficSummary> {
+        self.get("/v1/analytics/traffic").await
+    }
+
     /// Create a stateful conversation helper using this client
     pub fn conversation(&self) -> Conversation {
         Conversation::new(self.clone())

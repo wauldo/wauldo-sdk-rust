@@ -242,6 +242,65 @@ impl MockHttpClient {
         })
     }
 
+    // ── Insights & Analytics (mocked) ─────────────────────────────────
+
+    /// GET /v1/insights (mocked) -- returns dummy ROI metrics
+    pub async fn get_insights(&self) -> Result<InsightsResponse> {
+        Ok(InsightsResponse {
+            tig_key: "mock-key".to_string(),
+            total_requests: 100,
+            intelligence_requests: 80,
+            fallback_requests: 20,
+            tokens: InsightsTokenStats {
+                baseline_total: 50000,
+                real_total: 35000,
+                saved_total: 15000,
+                saved_percent_avg: 30.0,
+            },
+            cost: InsightsCostStats {
+                estimated_usd_saved: 1.25,
+            },
+        })
+    }
+
+    /// GET /v1/analytics (mocked) -- returns dummy usage analytics
+    pub async fn get_analytics(&self, _minutes: Option<u64>) -> Result<AnalyticsResponse> {
+        Ok(AnalyticsResponse {
+            cache: CacheMetrics {
+                total_requests: 100,
+                cache_hit_rate: 0.45,
+                avg_latency_ms: 120.0,
+                p95_latency_ms: 350.0,
+            },
+            tokens: TokenSavings {
+                total_baseline: 50000,
+                total_real: 35000,
+                total_saved: 15000,
+                avg_savings_percent: 30.0,
+            },
+            uptime_secs: 86400,
+        })
+    }
+
+    /// GET /v1/analytics/traffic (mocked) -- returns dummy traffic summary
+    pub async fn get_analytics_traffic(&self) -> Result<TrafficSummary> {
+        Ok(TrafficSummary {
+            total_requests_today: 250,
+            total_tokens_today: 125000,
+            top_tenants: vec![TenantTraffic {
+                tenant_id: "mock-tenant".to_string(),
+                requests_today: 250,
+                tokens_used: 125000,
+                success_rate: 0.98,
+                avg_latency_ms: 150,
+            }],
+            error_rate: 0.02,
+            avg_latency_ms: 150,
+            p95_latency_ms: 400,
+            uptime_secs: 86400,
+        })
+    }
+
     /// Fact-check (mocked) -- returns the value set via `with_fact_check()`
     pub async fn fact_check(&self, _request: FactCheckRequest) -> Result<FactCheckResponse> {
         self.fact_check_response.clone().ok_or_else(|| {

@@ -377,6 +377,77 @@ impl VerifyCitationRequest {
     }
 }
 
+// ── Insights & Analytics ───────────────────────────────────────────────
+
+/// GET /v1/insights response — ROI metrics
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InsightsResponse {
+    pub tig_key: String,
+    pub total_requests: u64,
+    pub intelligence_requests: u64,
+    pub fallback_requests: u64,
+    pub tokens: InsightsTokenStats,
+    pub cost: InsightsCostStats,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InsightsTokenStats {
+    pub baseline_total: u64,
+    pub real_total: u64,
+    pub saved_total: i64,
+    pub saved_percent_avg: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InsightsCostStats {
+    pub estimated_usd_saved: f64,
+}
+
+/// GET /v1/analytics response — usage analytics
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AnalyticsResponse {
+    pub cache: CacheMetrics,
+    pub tokens: TokenSavings,
+    pub uptime_secs: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CacheMetrics {
+    pub total_requests: u64,
+    pub cache_hit_rate: f32,
+    pub avg_latency_ms: f32,
+    pub p95_latency_ms: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TokenSavings {
+    pub total_baseline: u64,
+    pub total_real: u64,
+    pub total_saved: u64,
+    pub avg_savings_percent: f32,
+}
+
+/// GET /v1/analytics/traffic response — per-tenant traffic
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TrafficSummary {
+    pub total_requests_today: u64,
+    pub total_tokens_today: u64,
+    pub top_tenants: Vec<TenantTraffic>,
+    pub error_rate: f32,
+    pub avg_latency_ms: u64,
+    pub p95_latency_ms: u64,
+    pub uptime_secs: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TenantTraffic {
+    pub tenant_id: String,
+    pub requests_today: u64,
+    pub tokens_used: u64,
+    pub success_rate: f32,
+    pub avg_latency_ms: u64,
+}
+
 // ── Builders ────────────────────────────────────────────────────────────
 
 impl ChatRequest {
