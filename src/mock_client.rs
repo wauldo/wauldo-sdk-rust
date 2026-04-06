@@ -483,6 +483,22 @@ impl MockHttpClient {
         })
     }
 
+    /// Guard (mocked) -- returns a safe result
+    pub async fn guard(
+        &self,
+        _text: &str,
+        _source: &str,
+        _mode: Option<&str>,
+    ) -> Result<GuardResult> {
+        Ok(GuardResult {
+            safe: true,
+            verdict: "verified".to_string(),
+            action: "allow".to_string(),
+            reason: None,
+            confidence: 0.95,
+        })
+    }
+
     /// Upload text into RAG and immediately query it (mocked) -- convenience one-shot
     pub async fn rag_ask(
         &self,

@@ -377,6 +377,18 @@ impl VerifyCitationRequest {
     }
 }
 
+// ── Guard ──────────────────────────────────────────────────────────────
+
+/// Result from guard() — simple safe/unsafe verification
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GuardResult {
+    pub safe: bool,
+    pub verdict: String,
+    pub action: String,
+    pub reason: Option<String>,
+    pub confidence: f64,
+}
+
 // ── Insights & Analytics ───────────────────────────────────────────────
 
 /// GET /v1/insights response — ROI metrics

@@ -274,6 +274,29 @@ impl HttpClient {
         self.post("/v1/verify", &request).await
     }
 
+    /// Verify an LLM output against source — hallucination firewall.
+    /// Convenience wrapper around fact_check().
+    pub async fn guard(&self, text: &str, source: &str, mode: Option<&str>) -> Result<GuardResult> {
+        let request = FactCheckRequest {
+            text: text.to_string(),
+            source_context: source.to_string(),
+            mode: Some(mode.unwrap_or("lexical").to_string()),
+        };
+        let result = self.fact_check(request).await?;
+        let claim = result.claims.first();
+        Ok(GuardResult {
+            safe: claim.map(|c| c.verdict == "verified").unwrap_or(false),
+            verdict: claim
+                .map(|c| c.verdict.clone())
+                .unwrap_or_else(|| "rejected".to_string()),
+            action: claim
+                .map(|c| c.action.clone())
+                .unwrap_or_else(|| "block".to_string()),
+            reason: claim.and_then(|c| c.reason.clone()),
+            confidence: claim.map(|c| c.confidence).unwrap_or(0.0),
+        })
+    }
+
     // ── Insights & Analytics ──────────────────────────────────────────
 
     /// GET /v1/insights — ROI metrics for your API key
