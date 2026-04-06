@@ -18,6 +18,7 @@ pub struct MockHttpClient {
     rag_upload_response: Option<RagUploadResponse>,
     rag_query_response: Option<RagQueryResponse>,
     fact_check_response: Option<FactCheckResponse>,
+    verify_citation_response: Option<VerifyCitationResponse>,
 }
 
 impl MockHttpClient {
@@ -35,7 +36,163 @@ impl MockHttpClient {
             rag_upload_response: None,
             rag_query_response: None,
             fact_check_response: None,
+            verify_citation_response: None,
         }
+    }
+
+    /// Create a mock client pre-loaded with realistic sample data for all endpoints.
+    ///
+    /// This is the easiest way to explore the SDK without a running server.
+    ///
+    /// # Example
+    /// ```rust
+    /// use wauldo::MockHttpClient;
+    /// let mock = MockHttpClient::with_defaults();
+    /// ```
+    pub fn with_defaults() -> Self {
+        Self::new()
+            .with_chat_response(ChatResponse {
+                id: "mock-chat-001".to_string(),
+                object: "chat.completion".to_string(),
+                created: 1700000000,
+                model: "qwen2.5:7b".to_string(),
+                choices: vec![ChatChoice {
+                    index: 0,
+                    message: ChatMessage {
+                        role: "assistant".to_string(),
+                        content: Some(
+                            "Rust's ownership model ensures memory safety without a garbage \
+                             collector by enforcing strict rules about how values are owned, \
+                             borrowed, and moved at compile time."
+                                .to_string(),
+                        ),
+                        name: None,
+                    },
+                    finish_reason: Some("stop".to_string()),
+                }],
+                usage: Usage {
+                    prompt_tokens: 24,
+                    completion_tokens: 38,
+                    total_tokens: 62,
+                },
+            })
+            .with_models(vec![
+                Model {
+                    id: "qwen2.5:7b".to_string(),
+                    object: "model".to_string(),
+                    created: 1700000000,
+                    owned_by: "wauldo".to_string(),
+                },
+                Model {
+                    id: "llama-4-scout".to_string(),
+                    object: "model".to_string(),
+                    created: 1700000000,
+                    owned_by: "wauldo".to_string(),
+                },
+            ])
+            .with_rag_upload(RagUploadResponse {
+                document_id: "doc-abc123".to_string(),
+                chunks_count: 5,
+            })
+            .with_rag_query(RagQueryResponse {
+                answer: "Returns are accepted within 60 days of purchase. A valid receipt \
+                         is required. [1]"
+                    .to_string(),
+                sources: vec![
+                    RagSource {
+                        document_id: "doc-abc123".to_string(),
+                        content: "Our refund policy allows returns within 60 days of purchase. \
+                                  Customers must provide a valid receipt."
+                            .to_string(),
+                        score: 0.92,
+                        chunk_id: Some("chunk-001".to_string()),
+                        metadata: None,
+                    },
+                    RagSource {
+                        document_id: "doc-abc123".to_string(),
+                        content: "Refunds are processed within 5 business days after approval."
+                            .to_string(),
+                        score: 0.78,
+                        chunk_id: Some("chunk-002".to_string()),
+                        metadata: None,
+                    },
+                ],
+                audit: Some(RagAuditInfo {
+                    confidence: 0.92,
+                    retrieval_path: "BM25Only".to_string(),
+                    sources_evaluated: 5,
+                    sources_used: 2,
+                    best_score: 0.92,
+                    grounded: true,
+                    confidence_label: "high".to_string(),
+                    model: "qwen2.5:7b".to_string(),
+                    latency_ms: 340,
+                    candidates_found: Some(12),
+                    candidates_after_tenant: Some(12),
+                    candidates_after_score: Some(5),
+                    query_type: Some("Factual".to_string()),
+                }),
+                confidence: None,
+                grounded: None,
+            })
+            .with_fact_check(FactCheckResponse {
+                verdict: "verified".to_string(),
+                action: "allow".to_string(),
+                hallucination_rate: 0.0,
+                mode: "lexical".to_string(),
+                total_claims: 2,
+                supported_claims: 2,
+                confidence: 0.85,
+                claims: vec![
+                    ClaimResult {
+                        text: "Returns are accepted within 60 days.".to_string(),
+                        claim_type: "factual".to_string(),
+                        supported: true,
+                        confidence: 0.90,
+                        confidence_label: "high".to_string(),
+                        verdict: "verified".to_string(),
+                        action: "allow".to_string(),
+                        reason: None,
+                        evidence: Some("refund policy allows returns within 60 days".to_string()),
+                    },
+                    ClaimResult {
+                        text: "A valid receipt is required.".to_string(),
+                        claim_type: "factual".to_string(),
+                        supported: true,
+                        confidence: 0.82,
+                        confidence_label: "high".to_string(),
+                        verdict: "verified".to_string(),
+                        action: "allow".to_string(),
+                        reason: None,
+                        evidence: Some("Customers must provide a valid receipt".to_string()),
+                    },
+                ],
+                mode_warning: None,
+                processing_time_ms: 1,
+            })
+            .with_verify_citation(VerifyCitationResponse {
+                citation_ratio: 0.67,
+                has_sufficient_citations: true,
+                sentence_count: 3,
+                citation_count: 2,
+                uncited_sentences: vec![
+                    "Refunds are processed quickly.".to_string(),
+                ],
+                citations: Some(vec![
+                    CitationDetail {
+                        citation: "[1]".to_string(),
+                        source_name: "refund_policy.txt".to_string(),
+                        is_valid: true,
+                    },
+                    CitationDetail {
+                        citation: "[2]".to_string(),
+                        source_name: "refund_policy.txt".to_string(),
+                        is_valid: true,
+                    },
+                ]),
+                phantom_count: Some(0),
+                processing_time_ms: 1,
+            })
     }
 
     /// Set the chat completion response returned by `chat()`
@@ -95,6 +252,12 @@ impl MockHttpClient {
     /// Set the fact-check response returned by `fact_check()`
     pub fn with_fact_check(mut self, response: FactCheckResponse) -> Self {
         self.fact_check_response = Some(response);
+        self
+    }
+
+    /// Set the citation verification response returned by `verify_citation()`
+    pub fn with_verify_citation(mut self, response: VerifyCitationResponse) -> Self {
+        self.verify_citation_response = Some(response);
         self
     }
 
@@ -305,6 +468,18 @@ impl MockHttpClient {
     pub async fn fact_check(&self, _request: FactCheckRequest) -> Result<FactCheckResponse> {
         self.fact_check_response.clone().ok_or_else(|| {
             crate::error::Error::connection("MockHttpClient: no fact_check response configured")
+        })
+    }
+
+    /// Verify citation coverage (mocked) -- returns the value set via `with_verify_citation()`
+    pub async fn verify_citation(
+        &self,
+        _request: VerifyCitationRequest,
+    ) -> Result<VerifyCitationResponse> {
+        self.verify_citation_response.clone().ok_or_else(|| {
+            crate::error::Error::connection(
+                "MockHttpClient: no verify_citation response configured",
+            )
         })
     }
 

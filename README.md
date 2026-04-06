@@ -94,6 +94,44 @@ Wauldo:       "Refunds are processed within 60 days"     ← verified
 
 ---
 
+## Try locally (no server needed)
+
+Explore every feature using `MockHttpClient` -- no API key, no server, no network:
+
+```rust
+use wauldo::MockHttpClient;
+
+#[tokio::main]
+async fn main() {
+    let client = MockHttpClient::with_defaults();
+
+    // Upload + query
+    let _ = client.rag_upload("Your document text...", None).await.unwrap();
+    let result = client.rag_query("What is the refund policy?", None).await.unwrap();
+    println!("Answer: {}", result.answer);
+    println!("Grounded: {}", result.grounded().unwrap_or(false));
+
+    // Fact-check
+    let fc = client.fact_check(wauldo::FactCheckRequest::new(
+        "Returns within 60 days.", "Policy allows returns within 60 days.",
+    )).await.unwrap();
+    println!("Verdict: {}", fc.verdict);
+
+    // Analytics
+    let insights = client.get_insights().await.unwrap();
+    println!("Tokens saved: {}", insights.tokens.saved_total);
+}
+```
+
+Run the full quickstart example:
+
+```bash
+cargo run --example quickstart
+cargo run --example analytics_demo
+```
+
+---
+
 ## Examples
 
 ### Upload a PDF and ask questions
@@ -202,7 +240,7 @@ Free tier (300 req/month): [RapidAPI](https://rapidapi.com/binnewzzin/api/smart-
 
 ## Contributing
 
-PRs welcome. Check the [good first issues](https://github.com/wauldo/wauldo-sdk-rust/labels/good%20first%20issue).
+PRs welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions and guidelines. Check the [good first issues](https://github.com/wauldo/wauldo-sdk-rust/labels/good%20first%20issue).
 
 ## License
 
