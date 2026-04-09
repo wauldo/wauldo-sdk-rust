@@ -483,19 +483,36 @@ impl MockHttpClient {
         })
     }
 
-    /// Guard (mocked) -- returns a safe result
+    /// Guard (mocked) -- returns a safe GuardResponse
     pub async fn guard(
         &self,
-        _text: &str,
-        _source: &str,
-        _mode: Option<&str>,
-    ) -> Result<GuardResult> {
-        Ok(GuardResult {
-            safe: true,
+        text: impl Into<String>,
+        source_context: impl Into<String>,
+        mode: Option<&str>,
+    ) -> Result<GuardResponse> {
+        let t = text.into();
+        let ctx = source_context.into();
+        Ok(GuardResponse {
             verdict: "verified".to_string(),
             action: "allow".to_string(),
-            reason: None,
+            hallucination_rate: 0.0,
+            mode: mode.unwrap_or("lexical").to_string(),
+            total_claims: 1,
+            supported_claims: 1,
             confidence: 0.95,
+            claims: vec![GuardClaim {
+                text: t,
+                claim_type: Some("Fact".to_string()),
+                supported: true,
+                confidence: 0.95,
+                confidence_label: Some("high".to_string()),
+                verdict: "verified".to_string(),
+                action: "allow".to_string(),
+                reason: None,
+                evidence: Some(ctx),
+            }],
+            mode_warning: None,
+            processing_time_ms: Some(0),
         })
     }
 
