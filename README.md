@@ -134,6 +134,23 @@ cargo run --example analytics_demo
 
 ## Examples
 
+### Guard — catch hallucinations
+
+```rust
+let result = client.guard(
+    "Returns are accepted within 60 days of purchase",
+    "Our return policy allows returns within 14 days.",
+    None, // defaults to "lexical" mode
+).await?;
+
+println!("{}", result.verdict);             // "rejected"
+println!("{}", result.action);              // "block"
+println!("{:?}", result.claims[0].reason);  // Some("numerical_mismatch")
+println!("{}", result.is_blocked());        // true
+```
+
+Guard verifies any LLM output against source documents. Wrong answers get blocked before they reach your users. Modes: `lexical` (<1ms), `hybrid` (~50ms), `semantic` (~500ms).
+
 ### Upload a PDF and ask questions
 
 ```rust
