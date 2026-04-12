@@ -31,9 +31,11 @@ One import, two lines — plug Wauldo Guard on top of your existing RAG pipeline
 
 ```toml
 [dependencies]
-wauldo = "0.1"
+wauldo = "0.7"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 ```
+
+### Guard — catch hallucinations in 3 lines
 
 ```rust
 use wauldo::{HttpClient, HttpConfig, Result};
@@ -44,21 +46,23 @@ async fn main() -> Result<()> {
         HttpConfig::new("https://api.wauldo.com").with_api_key("YOUR_API_KEY"),
     )?;
 
-    // Upload a document
-    client.rag_upload("Our refund policy allows returns within 60 days...", Some("policy.txt".into())).await?;
-
-    // Ask a question — answer is verified against the source
-    let result = client.rag_query("What is the refund policy?", None).await?;
-    println!("Answer: {}", result.answer);
-    println!("Grounded: {}", result.grounded());
+    let result = client.guard(
+        "Returns are accepted within 60 days.",
+        "Our policy allows returns within 14 days.",
+        None,
+    ).await?;
+    println!("Verdict: {}", result.verdict);             // "rejected"
+    println!("Reason: {:?}", result.claims[0].reason);   // Some("numerical_mismatch")
     Ok(())
 }
 ```
 
-```
-Output:
-Answer: Returns are accepted within 60 days of purchase.
-Grounded: true | Confidence: 92%
+### Verified RAG — upload, ask, verify
+
+```rust
+client.rag_upload("Our refund policy allows returns within 60 days...", Some("policy.txt".into())).await?;
+let result = client.rag_query("What is the refund policy?", None).await?;
+println!("Answer: {}", result.answer);  // Verified answer with sources
 ```
 
 [Try the demo](https://wauldo.com/demo) | [Get a free API key](https://rapidapi.com/binnewzzin/api/smart-rag-api)
@@ -110,15 +114,13 @@ async fn main() {
     println!("Answer: {}", result.answer);
     println!("Grounded: {}", result.grounded().unwrap_or(false));
 
-    // Fact-check
-    let fc = client.fact_check(wauldo::FactCheckRequest::new(
-        "Returns within 60 days.", "Policy allows returns within 60 days.",
-    )).await.unwrap();
-    println!("Verdict: {}", fc.verdict);
-
-    // Analytics
-    let insights = client.get_insights().await.unwrap();
-    println!("Tokens saved: {}", insights.tokens.saved_total);
+    // Guard — catch hallucinations
+    let result = client.guard(
+        "Returns within 60 days.",
+        "Policy allows returns within 14 days.",
+        None,
+    ).await.unwrap();
+    println!("Verdict: {}", result.verdict);  // "rejected"
 }
 ```
 
@@ -153,28 +155,12 @@ Guard verifies any LLM output against source documents. Wrong answers get blocke
 ### Upload a PDF and ask questions
 
 ```rust
-// Upload — text extraction + quality scoring happens server-side
 let upload = client.upload_file("contract.pdf", Some("Q3 Contract".into()), None).await?;
-println!("Extracted {} chunks, quality: {}", upload.chunks_count, upload.quality_label);
+println!("Extracted {} chunks", upload.chunks_count);
 
-// Query
 let result = client.rag_query("What are the payment terms?", None).await?;
 println!("Answer: {}", result.answer);
 println!("Confidence: {:.0}%", result.confidence() * 100.0);
-println!("Grounded: {}", result.grounded());
-```
-
-### Fact-check any LLM output
-
-```rust
-let result = client.fact_check(
-    "Returns are accepted within 60 days.",
-    "Our policy allows returns within 14 days.",
-    Some("lexical"),
-).await?;
-println!("Verdict: {}", result.verdict);        // "rejected"
-println!("Action: {}", result.action);           // "block"
-println!("Reason: {}", result.claims[0].reason); // "numerical_mismatch"
 ```
 
 ### Chat (OpenAI-compatible)
@@ -211,13 +197,10 @@ let follow_up = conv.say("Give me an example").await?;
 
 ## Features
 
-- **Pre-generation fact extraction** — numbers, dates, limits injected as constraints
-- **Post-generation grounding check** — every answer verified against sources
-- **Citation validation** — detects phantom references
-- **Analytics & Insights** — track token savings, cache performance, cost per hour, and per-tenant traffic
-- **Guard method** — one-call hallucination firewall (`client.guard(text, source)` → safe/unsafe)
-- **Fact-check API** — verify any claim against any source (3 modes)
+- **Guard API** — one-call hallucination firewall, 3 modes (lexical <1ms, hybrid, semantic)
+- **Verified RAG** — every answer checked against source documents
 - **Native PDF/DOCX upload** — server-side extraction with quality scoring
+- **Analytics & Insights** — token savings, cache performance, per-tenant traffic
 - **Smart model routing** — auto-selects cheapest model that meets quality
 - **OpenAI-compatible** — swap your `base_url`, keep your existing code
 - **Type-safe** — full Rust type system, no unwrap in production
