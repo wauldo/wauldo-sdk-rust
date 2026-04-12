@@ -175,9 +175,7 @@ impl MockHttpClient {
                 has_sufficient_citations: true,
                 sentence_count: 3,
                 citation_count: 2,
-                uncited_sentences: vec![
-                    "Refunds are processed quickly.".to_string(),
-                ],
+                uncited_sentences: vec!["Refunds are processed quickly.".to_string()],
                 citations: Some(vec![
                     CitationDetail {
                         citation: "[1]".to_string(),

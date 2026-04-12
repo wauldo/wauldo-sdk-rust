@@ -76,7 +76,11 @@ impl AgentClient {
                         effort: s["effort"].as_str().unwrap_or("").to_string(),
                         dependencies: s["dependencies"]
                             .as_array()
-                            .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect())
+                            .map(|a| {
+                                a.iter()
+                                    .filter_map(|v| v.as_str().map(String::from))
+                                    .collect()
+                            })
                             .unwrap_or_default(),
                     })
                     .collect();

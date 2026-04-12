@@ -134,11 +134,7 @@ impl Conversation {
     /// assert_eq!(conv.history().len(), 1); // system prompt preserved
     /// ```
     pub fn clear(&mut self) {
-        let system = self
-            .history
-            .first()
-            .filter(|m| m.role == "system")
-            .cloned();
+        let system = self.history.first().filter(|m| m.role == "system").cloned();
         self.history.clear();
         if let Some(sys) = system {
             self.history.push(sys);

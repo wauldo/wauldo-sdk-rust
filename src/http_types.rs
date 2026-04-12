@@ -209,7 +209,10 @@ pub struct RagQueryResponse {
 impl RagQueryResponse {
     /// Get confidence from audit (preferred) or legacy flat field
     pub fn confidence(&self) -> Option<f32> {
-        self.audit.as_ref().map(|a| a.confidence).or(self.confidence)
+        self.audit
+            .as_ref()
+            .map(|a| a.confidence)
+            .or(self.confidence)
     }
 
     /// Get grounded from audit (preferred) or legacy flat field

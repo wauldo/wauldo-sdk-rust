@@ -16,11 +16,17 @@ async fn main() {
     println!("--- ROI Insights (/v1/insights) ---");
     println!("  TIG Key              : {}", insights.tig_key);
     println!("  Total requests       : {}", insights.total_requests);
-    println!("  Intelligence requests: {}", insights.intelligence_requests);
+    println!(
+        "  Intelligence requests: {}",
+        insights.intelligence_requests
+    );
     println!("  Fallback requests    : {}", insights.fallback_requests);
     println!();
     println!("  Tokens:");
-    println!("    Baseline total     : {}", insights.tokens.baseline_total);
+    println!(
+        "    Baseline total     : {}",
+        insights.tokens.baseline_total
+    );
     println!("    Real total         : {}", insights.tokens.real_total);
     println!("    Saved              : {}", insights.tokens.saved_total);
     println!(
@@ -42,7 +48,10 @@ async fn main() {
 
     println!("--- Usage Analytics (/v1/analytics?minutes=60) ---");
     println!("  Cache:");
-    println!("    Total requests     : {}", analytics.cache.total_requests);
+    println!(
+        "    Total requests     : {}",
+        analytics.cache.total_requests
+    );
     println!(
         "    Hit rate           : {:.1}%",
         analytics.cache.cache_hit_rate * 100.0
@@ -57,7 +66,10 @@ async fn main() {
     );
     println!();
     println!("  Tokens:");
-    println!("    Baseline           : {}", analytics.tokens.total_baseline);
+    println!(
+        "    Baseline           : {}",
+        analytics.tokens.total_baseline
+    );
     println!("    Real               : {}", analytics.tokens.total_real);
     println!("    Saved              : {}", analytics.tokens.total_saved);
     println!(
@@ -77,10 +89,7 @@ async fn main() {
         .expect("traffic failed");
 
     println!("--- Traffic Summary (/v1/analytics/traffic) ---");
-    println!(
-        "  Requests today       : {}",
-        traffic.total_requests_today
-    );
+    println!("  Requests today       : {}", traffic.total_requests_today);
     println!("  Tokens today         : {}", traffic.total_tokens_today);
     println!(
         "  Error rate           : {:.1}%",

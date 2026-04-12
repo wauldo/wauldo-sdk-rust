@@ -102,7 +102,11 @@ fn is_retryable(status: reqwest::StatusCode) -> bool {
 }
 
 fn backoff_duration(config: &RetryConfig, attempt: u32) -> std::time::Duration {
-    std::time::Duration::from_millis(config.backoff_ms.saturating_mul(2u64.saturating_pow(attempt.min(20))))
+    std::time::Duration::from_millis(
+        config
+            .backoff_ms
+            .saturating_mul(2u64.saturating_pow(attempt.min(20))),
+    )
 }
 
 fn parse_retry_after(resp: &reqwest::Response) -> Option<std::time::Duration> {

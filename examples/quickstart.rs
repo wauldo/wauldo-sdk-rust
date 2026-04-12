@@ -2,9 +2,7 @@
 //!
 //! Run with: `cargo run --example quickstart`
 
-use wauldo::{
-    ChatMessage, ChatRequest, FactCheckRequest, MockHttpClient, VerifyCitationRequest,
-};
+use wauldo::{ChatMessage, ChatRequest, FactCheckRequest, MockHttpClient, VerifyCitationRequest};
 
 #[tokio::main]
 async fn main() {
@@ -62,8 +60,14 @@ async fn main() {
     println!("3. Fact-Check");
     println!("   Verdict           : {}", fc.verdict);
     println!("   Action            : {}", fc.action);
-    println!("   Hallucination rate: {:.0}%", fc.hallucination_rate * 100.0);
-    println!("   Claims verified   : {}/{}", fc.supported_claims, fc.total_claims);
+    println!(
+        "   Hallucination rate: {:.0}%",
+        fc.hallucination_rate * 100.0
+    );
+    println!(
+        "   Claims verified   : {}/{}",
+        fc.supported_claims, fc.total_claims
+    );
     for claim in &fc.claims {
         let status = if claim.supported { "OK" } else { "FAIL" };
         println!(
@@ -105,7 +109,10 @@ async fn main() {
 
     println!("5. Insights (ROI)");
     println!("   Total requests        : {}", insights.total_requests);
-    println!("   Intelligence requests : {}", insights.intelligence_requests);
+    println!(
+        "   Intelligence requests : {}",
+        insights.intelligence_requests
+    );
     println!(
         "   Tokens saved          : {} ({:.0}%)",
         insights.tokens.saved_total, insights.tokens.saved_percent_avg
@@ -120,7 +127,9 @@ async fn main() {
     let chat = client
         .chat(ChatRequest::new(
             "qwen2.5:7b",
-            vec![ChatMessage::user("Explain ownership in Rust in one sentence.")],
+            vec![ChatMessage::user(
+                "Explain ownership in Rust in one sentence.",
+            )],
         ))
         .await
         .expect("chat failed");

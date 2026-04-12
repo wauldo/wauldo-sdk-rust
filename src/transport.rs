@@ -237,7 +237,9 @@ impl Drop for StdioTransport {
                 let _ = child.start_kill();
             }
         } else {
-            tracing::warn!("StdioTransport dropped while lock held — child process may be orphaned");
+            tracing::warn!(
+                "StdioTransport dropped while lock held — child process may be orphaned"
+            );
         }
     }
 }
